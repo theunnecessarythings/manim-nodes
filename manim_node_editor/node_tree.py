@@ -2,6 +2,7 @@ import bpy
 from bpy.types import NodeTree, NodeSocket, Menu
 from bpy.props import FloatProperty, StringProperty, BoolProperty
 from .sockets import ManimNodeSocket, ManimSequenceSocket, ManimAnimationSocket, ManimObjectSocket
+from .compiler import NODE_OT_compile_nodetree
 
 class ManimNodeTree(NodeTree):
     '''Manim node editor for creating mathematical animations'''
@@ -815,6 +816,8 @@ classes = (
 
     ManimNodeTree,
 
+    NODE_OT_compile_nodetree,
+
     MANIM_MT_sequence_menu,
     
     # Animation menus
@@ -878,29 +881,35 @@ classes = (
     MANIM_MT_scene_zoomed_scene_menu,
 )
 
+def draw_compile_button(self, context):
+    layout = self.layout
+    space = context.space_data
+    if getattr(space, 'tree_type', None) == 'ManimNodeTree':
+        layout.operator('node.compile_nodetree', text='Compile Scene', icon='TEXT')
+
+
 def register():
-    # Try to register each class separately with error handling
     for cls in classes:
         try:
             bpy.utils.register_class(cls)
         except Exception as e:
             print(f"Error registering class {cls.__name__}: {e}")
     
-    # Add our menu to node editor
     bpy.types.NODE_MT_add.append(add_manim_menu)
+    bpy.types.NODE_HT_header.append(draw_compile_button)
 
 def add_manim_menu(self, context):
     if context.space_data.tree_type == 'ManimNodeTree':
         layout = self.layout
-        # Add the four main categories directly instead of a single "Manim" menu
         layout.menu("MANIM_MT_animation_menu")
         layout.menu("MANIM_MT_camera_menu")
         layout.menu("MANIM_MT_object_menu")
         layout.menu("MANIM_MT_scene_menu")
         layout.menu("MANIM_MT_sequence_menu")
+
 def unregister():
-    # Remove our menu from node editor
     bpy.types.NODE_MT_add.remove(add_manim_menu)
+    bpy.types.NODE_HT_header.remove(draw_compile_button)
     
     # Unregister classes
     for cls in reversed(classes):

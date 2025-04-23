@@ -102,10 +102,18 @@ class ManimAddNode(Node, ManimNode):
 class ManimWaitNode(Node, ManimNode):
     bl_idname = 'ManimWaitNodeType'
     bl_label = 'Wait'
+
+    seconds: bpy.props.FloatProperty(
+        name="Seconds",
+        default=1.0,
+        min=0.0,
+        description="Wait time in seconds",
+    )  # type: ignore
     
     def init(self, context):
         self.inputs.new('ManimSequenceSocket', "Sequence")
         self.outputs.new('ManimSequenceSocket', "Sequence")
+        self.inputs.new('NodeSocketFloat', "Seconds").default_value = 1
     
     def draw_buttons(self, context, layout):
         pass
